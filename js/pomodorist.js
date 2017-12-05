@@ -1,71 +1,85 @@
-#
-container {
-    border: 1 px solid #333;
-  border-radius :20px;
-  width:400px;
-  margin:20px auto;
-  padding:20px;
-  text-align:center;
-  background : # 333;
-}
-
-#
-timer {
-    color: #f00;
-    font - size: 50 px;
-    margin: 10 px auto;
-    border: 5 px solid red;
-    border - radius: 50 % ;
-    width: 200 px;
-    height: 200 px;
-    overflow: hidden;
-    position: relative; -
-    webkit - user - select: none; -
-    moz - user - select: none; -
-    ms - user - select: none;
-    user - select: none;
-    cursor: default;
-}
-
-#
-time {
-    margin - top: 70 px;
-    z - index: 1;
-    position: relative;
-}
-
-#
-filler {
-    background: #ddffcc;
-    height: 0 px;
-    width: 200 px;
-    position: absolute;
-    bottom: 0;
-}
-
-#
-buttons button {
-    background: #4da6ff; 
-  border:none; 
-  color:# fff;
-    cursor: pointer;
-    padding: 5 px;
-    width: 90 px;
-    margin: 10 px auto;
-    font - size: 14 px;
-    height: 50 px;
-    border - radius: 50 px;
-}
-
-#
-buttons button# shortBreak {
-    background: #0c0;
-}
-
-# buttons button# longBreak {
-            background: #080;
-}
-
-# buttons button# stop {
-                background: #f00;
-            }
+ var pomodoro = {
+    started : false,
+    minutes : 0,
+    seconds : 0,
+    fillerHeight : 0,
+    fillerIncrement : 0,
+    interval : null,
+    minutesDom : null,
+    secondsDom : null,
+    fillerDom : null,
+    init : function(){
+      var self = this;
+      this.minutesDom = document.querySelector('#minutes');
+      this.secondsDom = document.querySelector('#seconds');
+      this.fillerDom = document.querySelector('#filler');
+      this.interval = setInterval(function(){
+        self.intervalCallback.apply(self);
+      }, 1000);
+      document.querySelector('#work').onclick = function(){
+        self.startWork.apply(self);
+      };
+      document.querySelector('#shortBreak').onclick = function(){
+        self.startShortBreak.apply(self);
+      };
+      document.querySelector('#longBreak').onclick = function(){
+        self.startLongBreak.apply(self);
+      };
+      document.querySelector('#stop').onclick = function(){
+        self.stopTimer.apply(self);
+      };
+    },
+    resetVariables : function(mins, secs, started){
+      this.minutes = mins;
+      this.seconds = secs;
+      this.started = started;
+      this.fillerIncrement = 200/(this.minutes*60);
+      this.fillerHeight = 0;  
+    },
+    startWork: function() {
+      this.resetVariables(25, 0, true);
+    },
+    startShortBreak : function(){
+      this.resetVariables(5, 0, true);
+    },
+    startLongBreak : function(){
+      this.resetVariables(15, 0, true);
+    },
+    stopTimer : function(){
+      this.resetVariables(25, 0, false);
+      this.updateDom();
+    },
+    toDoubleDigit : function(num){
+      if(num < 10) {
+        return "0" + parseInt(num, 10);
+      }
+      return num;
+    },
+    updateDom : function(){
+      this.minutesDom.innerHTML = this.toDoubleDigit(this.minutes);
+      this.secondsDom.innerHTML = this.toDoubleDigit(this.seconds);
+      this.fillerHeight = this.fillerHeight + this.fillerIncrement;
+      this.fillerDom.style.height = this.fillerHeight + 'px';
+    },
+    intervalCallback : function(){
+      if(!this.started) return false;
+      if(this.seconds == 0) {
+        if(this.minutes == 0) {
+          this.timerComplete();
+          return;
+        }
+        this.seconds = 59;
+        this.minutes--;
+      } else {
+        this.seconds--;
+      }
+      this.updateDom();
+    },
+    timerComplete : function(){
+      this.started = false;
+      this.fillerHeight = 0;
+    }
+};
+window.onload = function(){
+  pomodoro.init();
+};
